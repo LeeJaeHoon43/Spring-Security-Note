@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -17,11 +18,11 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class SpringSecurityConfig {
+public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserService userService;
 
-    @Bean
+    @Override
     protected void configure(HttpSecurity http) throws Exception {
         // basic authentication
         http.httpBasic().disable(); // basic authentication filter 비활성화
@@ -50,9 +51,9 @@ public class SpringSecurityConfig {
                 .logoutSuccessUrl("/");
     }
 
-    @Bean
+    @Override
     public void configure(WebSecurity web) {
-        // 정적 리소스 spring security 대상에서 제외.
+        // 정적 리소스 spring security 대상에서 제외
         // web.ignoring().antMatchers("/images/**", "/css/**"); // 아래 코드와 같은 코드입니다.
         web.ignoring().requestMatchers(PathRequest.toStaticResources().atCommonLocations());
     }
@@ -63,6 +64,7 @@ public class SpringSecurityConfig {
      * @return UserDetailsService
      */
     @Bean
+    @Override
     public UserDetailsService userDetailsService() {
         return username -> {
             User user = userService.findByUsername(username);
