@@ -23,8 +23,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@ActiveProfiles(profiles = "test")
 @Transactional
+@ActiveProfiles(profiles = "test")
 class NoteControllerTest {
 
     @Autowired
@@ -53,8 +53,8 @@ class NoteControllerTest {
                 .andExpect(status().is3xxRedirection());
     }
 
-    @Test
     // WithUserDetails 로 테스트 하는 방법.
+    @Test
     @WithUserDetails(
             value = "user123", // userDetailsService를 통해 가져올 수 있는 유저
             userDetailsServiceBeanName = "userDetailsService", // UserDetailsService 구현체의 Bean
