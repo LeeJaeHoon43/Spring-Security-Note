@@ -2,7 +2,10 @@ package com.example.note.config;
 
 import com.example.note.filter.StopwatchFilter;
 import com.example.note.filter.TesterAuthenticationFilter;
+import com.example.note.jwt.JwtAuthenticationFilter;
+import com.example.note.jwt.JwtAuthorizationFilter;
 import com.example.note.user.User;
+import com.example.note.user.UserRepository;
 import com.example.note.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
@@ -13,9 +16,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
@@ -25,6 +30,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserService userService;
+    private final UserRepository userRepository;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -35,9 +41,20 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         // basic authentication filter disable
         http.httpBasic().disable(); // basic authentication filter 비활성화.
         // csrf
-        http.csrf();
+        http.csrf().disable();
         // rememberMeAuthenticationFilter
-        http.rememberMe();
+        http.rememberMe().disable();
+        // stateless
+        http.sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        // jwt filter
+        http.addFilterBefore(
+                new JwtAuthenticationFilter(authenticationManager()),
+                UsernamePasswordAuthenticationFilter.class
+        ).addFilterBefore(
+                new JwtAuthorizationFilter(userRepository),
+                BasicAuthenticationFilter.class
+        );
         // authorization : 인가를 설정
         http.authorizeRequests()
                 // /와 /home은 모두에게 허용
